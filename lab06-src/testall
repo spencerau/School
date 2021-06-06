@@ -1,0 +1,63 @@
+#!/bin/bash
+
+export LAB=lab05
+
+(make clean; make) || exit 1
+
+total=0
+totalmax=0
+
+function runtest {
+	 prog=$1
+	 testinput=$2
+	 grade=$3
+	 totalmax=`expr $totalmax + $grade`;
+	 descr="$prog < $testinput"
+	 
+	 echo "========== $descr =========="
+	 
+	#now run the student's program
+	 ./$prog < $testinput > $testinput.out
+	 diff $testinput.out $testinput.org.out > diff.out
+	 
+	 if [ $? -eq 0 ]
+	 then
+	     cat $testinput.out
+	     echo Test passed!
+	     printf "%-36s: %-3d of %-3d\n" "$descr " $grade $grade >> total.txt
+	     total=`expr $total + $grade`;
+	 else
+	     echo "*** Test Failed! ***"
+	     echo ------- Your Output -------
+	     cat $testinput.out
+	     echo ----- Expected Output -----
+	     cat $testinput.org.out
+	     echo ------- Difference --------
+	     cat diff.out
+	     echo ---------------------------
+	     printf "%-36s: %-3d of %-3d\n" "$descr " 0 $grade >> total.txt
+	 fi
+	 echo
+}
+
+#run all of the tests
+runtest name     ./tests/test1 10
+runtest name     ./tests/test2 10
+runtest compare  ./tests/test3 5
+runtest compare  ./tests/test4 5
+runtest compare  ./tests/test5 5
+runtest compare  ./tests/test6 5
+runtest compare  ./tests/test7 5
+
+echo
+echo
+echo "--------------------------------------"
+echo "CS250: Lab=$LAB | User=$USER"
+echo "--------------------------------------"
+cat total.txt
+echo "--------------------------------------"
+echo "CS252: $LAB. $USER" `date` " Total: " $total of $totalmax >> total.out
+echo >> total.out
+
+cat total.out
+echo
